@@ -57,7 +57,8 @@ signin:["Google થી sign in કરો (ફોન અને PC પર એક �
 export:["Backup સાચવો","Export backup"],import:["Backup પાછું લાવો","Import backup"],about:["DARSHAN CORPORATION ના Darshankumar Savsani દ્વારા","By Darshankumar Savsani, DARSHAN CORPORATION"],
 stmt:["હિસાબ","Statement"],tot:["કુલ બાકી","Total due"],
 ap:["દેખાવ","Appearance"],ap_color:["થીમ રંગ","Theme colour"],ap_dark:["ડાર્ક મોડ","Dark mode"],ap_size:["અક્ષરનું કદ","Text size"],ap_bold:["બોલ્ડ અક્ષર","Bold text"],ap_hc:["વધુ કોન્ટ્રાસ્ટ (સરળ વાંચન)","High contrast (easier to read)"],ap_s0:["નાનું","Small"],ap_s1:["સામાન્ય","Normal"],ap_s2:["મોટું","Large"],ap_s3:["ખૂબ મોટું","Extra large"],ap_reset:["ડિફૉલ્ટ પર પાછું","Reset to default"],
-bud:["માસિક બજેટ","Monthly budget"],bud_hint:["દરેક કેટેગરીનું આ મહિનાનું બજેટ (₹). ખાલી = બજેટ નથી.","Budget for each category this month (₹). Empty = no budget."],bud_used:["%d% વપરાયું","%d% used"],bud_over:["બજેટ વટી ગયું","Over budget"],bud_warn:["⚠ %s: બજેટ %d% વપરાયું","⚠ %s budget %d% used"]
+bud:["માસિક બજેટ","Monthly budget"],bud_hint:["દરેક કેટેગરીનું આ મહિનાનું બજેટ (₹). ખાલી = બજેટ નથી.","Budget for each category this month (₹). Empty = no budget."],bud_used:["%d% વપરાયું","%d% used"],bud_over:["બજેટ વટી ગયું","Over budget"],bud_warn:["⚠ %s: બજેટ %d% વપરાયું","⚠ %s budget %d% used"],
+srch:["શોધ (નોંધ કે રકમ)","Search (note or amount)"],f_all:["બધું","All"],f_cat:["બધી કેટેગરી","All categories"],csv:["Excel/CSV export","Export Excel/CSV"],csvh:["તારીખ,પ્રકાર,કેટેગરી/વ્યક્તિ,નોંધ,રકમ (₹)","Date,Type,Category/Person,Note,Amount (Rs)"],matches:["%d મળ્યા","%d found"]
 };
 function t(k){return T[k]?T[k][gu?0:1]:k}
 var CATS=["food","travel","shop","bill","health","other"];
@@ -94,9 +95,15 @@ function vHome(m){var s=sums(0);
   fm.querySelector("#sv").onclick=function(){var a=paise(fm.querySelector("#a").value);if(!(a>0))return;var e={id:id(),type:type,amt:a,note:fm.querySelector("#n").value.trim(),ts:Date.now()};if(type==="out")e.cat=fm.querySelector("#c").value;S.entries.push(e);save();render()}}
  f.querySelector("#bi").onclick=function(){form("in")};f.querySelector("#bo").onclick=function(){form("out")};m.appendChild(f);
  budgetAlerts().forEach(function(a){m.appendChild(el('<div class="card" style="background:#fff4e5;color:#5a3b00"><b>'+t("bud_warn").replace("%s",t("c_"+a.c)).replace("%d",a.p)+'</b></div>'))});
- var l=S.entries.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,60);if(!l.length)m.appendChild(el('<div class="muted" style="text-align:center">'+t("none")+'</div>'));
- l.forEach(function(e){var c=el('<div class="card row"><div class="muted" style="width:46px">'+day(e.ts)+'</div><div class="grow"><div>'+esc(e.note||(e.cat?t("c_"+e.cat):""))+'</div>'+(e.cat?'<span class="pill">'+t("c_"+e.cat)+'</span>':"")+'</div><div class="'+(e.type==="in"?"in":"out")+'">'+(e.type==="in"?"+":"-")+' ₹'+money(e.amt)+'</div><button class="x">✕</button></div>');
-  c.querySelector(".x").onclick=function(){if(ask()){S.entries=S.entries.filter(function(x){return x.id!==e.id});save();render()}};m.appendChild(c)})}
+ var fc=el('<div class="card"><input id="sq" placeholder="'+t("srch")+'" value="'+esc(Q.q)+'"><div class="row" style="margin-top:8px"><select id="st" class="grow"><option value="all">'+t("f_all")+'</option><option value="in">'+t("in")+'</option><option value="out">'+t("out")+'</option></select><select id="sc" class="grow"><option value="all">'+t("f_cat")+'</option>'+CATS.map(function(c){return'<option value="'+c+'">'+t("c_"+c)+'</option>'}).join("")+'</select></div><div class="muted" id="sn" style="margin-top:6px"></div></div>');
+ fc.querySelector("#st").value=Q.t;fc.querySelector("#sc").value=Q.c;m.appendChild(fc);
+ var box=el('<div></div>');m.appendChild(box);
+ function draw(){var r=filtered();box.innerHTML="";fc.querySelector("#sn").textContent=r.act?t("matches").replace("%d",r.n):"";
+  if(!r.l.length)box.appendChild(el('<div class="muted" style="text-align:center">'+t("none")+'</div>'));
+  r.l.forEach(function(e){var c=el('<div class="card row"><div class="muted" style="width:46px">'+day(e.ts)+'</div><div class="grow"><div>'+esc(e.note||(e.cat?t("c_"+e.cat):""))+'</div>'+(e.cat?'<span class="pill">'+t("c_"+e.cat)+'</span>':"")+'</div><div class="'+(e.type==="in"?"in":"out")+'">'+(e.type==="in"?"+":"-")+' ₹'+money(e.amt)+'</div><button class="x">✕</button></div>');
+   c.querySelector(".x").onclick=function(){if(ask()){S.entries=S.entries.filter(function(x){return x.id!==e.id});save();render()}};box.appendChild(c)})}
+ fc.querySelector("#sq").oninput=function(){Q.q=this.value;draw()};fc.querySelector("#st").onchange=function(){Q.t=this.value;draw()};fc.querySelector("#sc").onchange=function(){Q.c=this.value;draw()};
+ draw()}
 function vUdhar(m){var dl=dueList();
  if(dl.length){var b=el('<div class="card" style="background:#fff4e5"><div class="big">⏰ '+t("dues")+' ('+dl.length+')</div></div>');dl.slice(0,6).forEach(function(d){b.appendChild(el('<div class="muted">'+esc(d.p.name)+' — ₹'+money(d.x.amt)+' • '+dstr(d.x.due)+'</div>'))});m.appendChild(b)}
  var tot=0;S.people.forEach(function(p){tot+=bal(p)});
@@ -160,9 +167,23 @@ function budgetCard(){
  var c=el(h+'<button class="btn" id="bsv">'+t("save")+'</button></div>');
  c.querySelector("#bsv").onclick=function(){var bd={};c.querySelectorAll("[data-b]").forEach(function(i){var v=paise(i.value);if(v>0)bd[i.dataset.b]=v});S.budgets=bd;save();render()};
  return c}
+
+var Q={q:"",t:"all",c:"all"};
+function filtered(){var q=Q.q.trim().toLowerCase();var act=q||Q.t!=="all"||Q.c!=="all";
+ var l=S.entries.slice().sort(function(a,b){return b.ts-a.ts}).filter(function(e){
+  if(Q.t!=="all"&&e.type!==Q.t)return false;if(Q.c!=="all"&&(e.cat||"other")!==Q.c)return false;
+  if(q){var hay=((e.note||"")+" "+(e.cat?t("c_"+e.cat):"")+" "+(e.amt/100)).toLowerCase();if(hay.indexOf(q)<0)return false}return true});
+ return{l:act?l:l.slice(0,60),act:act,n:l.length}}
+function csvEsc(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function exportCSV(){var rows=[t("csvh").split(",")];
+ S.entries.slice().sort(function(a,b){return a.ts-b.ts}).forEach(function(e){rows.push([new Date(e.ts).toISOString().slice(0,10),e.type==="in"?"Income":"Expense",e.cat?t("c_"+e.cat):"",e.note||"",(e.amt/100).toFixed(2)])});
+ S.people.forEach(function(p){p.tx.forEach(function(x){rows.push([new Date(x.ts||x.date||0).toISOString().slice(0,10),x.type==="gave"?"Credit given":"Credit received",p.name,x.note||"",(x.amt/100).toFixed(2)])})});
+ var csv="\ufeff"+rows.map(function(r){return r.map(csvEsc).join(",")}).join("\r\n");
+ var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="khata-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove()}
 function hash(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode("khata:"+s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")})}
 function vSet(m){
  m.appendChild(appearanceCard());
+ var xc=el('<div class="card"><button class="btn grey" id="xcsv">'+t("csv")+'</button></div>');xc.querySelector("#xcsv").onclick=exportCSV;m.appendChild(xc);
  var hasPin=!!localStorage.getItem("kh_pin");
  var c=el('<div class="card"><div class="big">'+t("pin")+'</div><div class="muted">'+(hasPin?t("pin_on"):"")+'</div>'+(hasPin?'<button class="btn grey" id="po">'+t("pin_off")+'</button>':'<input id="pp" type="password" inputmode="numeric" maxlength="8" placeholder="'+t("pin_set")+'"><button class="btn" id="ps">'+t("save")+'</button>')+'</div>');
  if(hasPin)c.querySelector("#po").onclick=function(){localStorage.removeItem("kh_pin");render()};
